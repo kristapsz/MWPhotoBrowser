@@ -203,6 +203,10 @@
 	
 }
 
+- (UIToolbar*)toolbar {
+    return _toolbar;
+}
+
 - (void)performLayout {
     
     // Setup
