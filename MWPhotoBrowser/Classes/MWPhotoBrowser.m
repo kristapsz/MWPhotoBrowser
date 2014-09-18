@@ -132,6 +132,13 @@
 	
 }
 
+- (NSString*)doneButtonTitle
+{
+    if (_doneButtonTitle)
+        return _doneButtonTitle;
+    return NSLocalizedString(@"Done", nil);
+}
+
 #pragma mark - View Loading
 
 // Implement viewDidLoad to do additional setup after loading the view, typically from a nib.
@@ -220,7 +227,7 @@
     // Navigation buttons
     if ([self.navigationController.viewControllers objectAtIndex:0] == self) {
         // We're first on stack so show done button
-        _doneButton = [[UIBarButtonItem alloc] initWithTitle:NSLocalizedString(@"Done", nil) style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
+        _doneButton = [[UIBarButtonItem alloc] initWithTitle:self.doneButtonTitle style:UIBarButtonItemStylePlain target:self action:@selector(doneButtonPressed:)];
         // Set appearance
         if ([UIBarButtonItem respondsToSelector:@selector(appearance)]) {
             [_doneButton setBackgroundImage:nil forState:UIControlStateNormal barMetrics:UIBarMetricsDefault];
@@ -297,7 +304,7 @@
             break;
         }
     }
-    if (hideToolbar) {
+    if (hideToolbar && !self.alwaysShowToolbar) {
         [_toolbar removeFromSuperview];
     } else {
         [self.view addSubview:_toolbar];

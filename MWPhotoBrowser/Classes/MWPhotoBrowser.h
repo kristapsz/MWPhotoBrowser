@@ -54,6 +54,9 @@
 @property (nonatomic) NSUInteger delayToHideElements;
 @property (nonatomic, readonly) NSUInteger currentIndex;
 
+@property (nonatomic, strong) NSString *doneButtonTitle;
+@property (nonatomic) BOOL alwaysShowToolbar;
+
 - (void)performLayout;
 - (UIToolbar*)toolbar;
 
@@ -71,5 +74,6 @@
 // Navigation
 - (void)showNextPhotoAnimated:(BOOL)animated;
 - (void)showPreviousPhotoAnimated:(BOOL)animated;
+
 
 @end
