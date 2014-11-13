@@ -1155,7 +1155,7 @@
 
 - (void)showGrid:(BOOL)animated {
 
-//    if (_gridController) return;
+    if (_gridController) return;
     
     // Init grid controller
     _gridController = [[MWGridViewController alloc] init];
@@ -1163,7 +1163,7 @@
     _gridController.browser = self;
     _gridController.selectionMode = _displaySelectionButtons;
     _gridController.view.frame = self.view.bounds;
-    _gridController.view.frame = CGRectOffset(_gridController.view.frame, 0, self.view.bounds.size.height);
+    _gridController.view.frame = CGRectOffset(_gridController.view.frame, 0, (self.startOnGrid ? -1 : 1) * self.view.bounds.size.height);
 
     // Stop specific layout being triggered
     _skipNextPagingScrollViewPositioning = YES;
@@ -1188,7 +1188,7 @@
     [UIView animateWithDuration:animated ? 0.3 : 0 animations:^(void) {
         _gridController.view.frame = self.view.bounds;
         CGRect newPagingFrame = [self frameForPagingScrollView];
-        newPagingFrame = CGRectOffset(newPagingFrame, 0, -newPagingFrame.size.height);
+        newPagingFrame = CGRectOffset(newPagingFrame, 0, (self.startOnGrid ? 1 : -1) * newPagingFrame.size.height);
         _pagingScrollView.frame = newPagingFrame;
     } completion:^(BOOL finished) {
         [_gridController didMoveToParentViewController:self];
@@ -1210,7 +1210,7 @@
     
     // Position prior to hide animation
     CGRect newPagingFrame = [self frameForPagingScrollView];
-    newPagingFrame = CGRectOffset(newPagingFrame, 0, -newPagingFrame.size.height);
+    newPagingFrame = CGRectOffset(newPagingFrame, 0, (self.startOnGrid ? 1 : -1) * newPagingFrame.size.height);
     _pagingScrollView.frame = newPagingFrame;
     
     // Remember and remove controller now so things can detect a nil grid controller
@@ -1223,7 +1223,7 @@
     
     // Animate, hide grid and show paging scroll view
     [UIView animateWithDuration:0.3 animations:^{
-        tmpGridController.view.frame = CGRectOffset(self.view.bounds, 0, self.view.bounds.size.height);
+        tmpGridController.view.frame = CGRectOffset(self.view.bounds, 0, (self.startOnGrid ? -1 : 1) * self.view.bounds.size.height);
         _pagingScrollView.frame = [self frameForPagingScrollView];
     } completion:^(BOOL finished) {
         [tmpGridController willMoveToParentViewController:nil];
@@ -1439,6 +1439,17 @@
 - (void)doneButtonPressed:(id)sender {
     // Only if we're modal and there's a done button
     if (_doneButton) {
+        // See if we actually just want to show/hide grid
+        if (self.enableGrid) {
+            if (self.startOnGrid && !_gridController) {
+                [self showGrid:YES];
+                return;
+            } else if (!self.startOnGrid && _gridController) {
+                [self hideGrid];
+                return;
+            }
+        }
+        // Dismiss view controller
         if ([_delegate respondsToSelector:@selector(photoBrowserDidFinishModalPresentation:)]) {
             // Call delegate method and let them dismiss us
             [_delegate photoBrowserDidFinishModalPresentation:self];
@@ -1516,6 +1527,10 @@
                         [weakSelf hideControlsAfterDelay];
                         [weakSelf hideProgressHUD:YES];
                     }];
+                    // iOS 8 - Set the Anchor Point for the popover
+                    if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"8")) {
+                        self.activityViewController.popoverPresentationController.barButtonItem = _actionButton;
+                    }
                     [self presentViewController:self.activityViewController animated:YES completion:nil];
                     
                 }
